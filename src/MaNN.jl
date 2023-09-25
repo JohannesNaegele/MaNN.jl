@@ -1,5 +1,6 @@
 module MaNN
 
-# Write your package code here.
+include("Contracts.jl")
+include("Metrics.jl")
 
 end
