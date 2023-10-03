@@ -1,18 +1,16 @@
 abstract type AbstractLayer end
+abstract type AbstractOptimizer end
 
 """
-A layer is a function which produces some output/prediction given some input values.
+    model = Dense(3 => 10)
+    model([1, 2, 3])
+A layer is a function which produces some output/prediction given input values.
 """
 function (layer::AbstractLayer)(input) end
 
 """
-Returns the loss and the corresponding gradient.
-We need this because we don't have automatic differentiation!
+    update!(params, grad, opt)
+Perform gradient descent on parameters given a gradient with an optimizer (which chooses e.g. the learning rate).
+Has to be implemented by an optimizer.
 """
-function withgradient(layer::AbstractLayer, loss(d)) end
-
-"""
-    update!(layer, grad, opt)
-Perform gradient descent on the layer given a gradient with an optimizer (which chooses e.g. the learning rate).
-"""
-function update!(layer::AbstractLayer, grad, opt) end # example
+function update!(opt::AbstractOptimizer, params, grad) end
