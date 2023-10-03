@@ -16,5 +16,9 @@ function cross_entropy(y_pred::AbstractArray, y_true::AbstractArray; derivative=
     end
 end
 
+function softmax(z::AbstractArray)
+    exp_z = exp.(z .- maximum(z)) # important, otherwise we might get float overflow!
+    return exp_z ./ sum(exp_z)
+end
+
 # TODO: write more loss/activation functions
-# softmax(x, θ) = ...
