@@ -2,12 +2,17 @@ using MaNN # Tipp: Revise
 using MLDatasets
 using Plots
 
+# TODO: normalize
 trainset = MNIST(:train)
 testset = MNIST(:test)
 
 # TODO: write proper struct with less data usage
 function onehot(input, labels=0:9)
-    return [input == r ? 0.0 : 1.0 for r in labels]
+    return [(input == r) ? 1.0 : 0.0 for r in labels]
+end
+
+function onehotbatch(input, labels=0:9)
+    return map(x -> onehot(x, labels), input)
 end
 
 function onecold(y, labels=0:9)
@@ -15,13 +20,6 @@ function onecold(y, labels=0:9)
     return labels[indices[1]]
 end
 
-function deep_neural_network(sizes, activations)
-    return Chain(
-        [Dense(sizes[i], activations[i]) for i in eachindex(sizes)]
-    )
-end
-
-# TODO: test on test data
 function validate(model, data)
     correct = 0  # Counter for correctly classified examples
 
@@ -38,11 +36,22 @@ function validate(model, data)
     return accuracy
 end
 
-my_first_net = deep_neural_network([10, 512, 10], [leakyrelu, leakyrelu, softmax])
+my_first_net = Chain(
+    Dense(784 => 256, MaNN.leakyrelu),
+    Dense(256 => 512, MaNN.leakyrelu),
+    Dense(512 => 10, MaNN.leakyrelu),
+    MaNN.softmax
+)
 
-# TODO: train
-# note: this is comprehensive notation for an array of tuples
-train_hardcoded!(my_first_net, loss, [(trainset.features, onehot.(trainset.targets, 0:9))])
+@code_warntype my_first_net(rand(784))
+
+# TODO: implement train with autodiff
+@profview train_hardcoded!(
+    my_first_net,
+    cross_entropy,
+    [(vec(trainset.features[:, :, i]), onehotbatch(trainset.targets[i], 0:9)) for i in eachindex(trainset.targets[1:100])],
+    BoringOptimizer(0.1)
+)
 
 validate(my_first_net, [(testset.features, onehot.(testset.targets, 0:9))])
 
