@@ -8,10 +8,21 @@ function gradient_hardcoded(chain::Chain, loss, label, input, gs)
     # calculate derivative of loss function
     δ = loss(input[end], label, derivative=true)
     # calculate derivatives inside of layers
-    for i in rev(eachindex(chain.layers))
-        δ = δ .* layer.activation(input[i], derivative=true)
-        gs[i] = δ * input', δ
-        δ = layer.weights' * δ
+    # println(size.(input))
+    for i in reverse(eachindex(chain.layers))
+        # println(i)
+        # println(size(δ))
+        # println(size(input[i]))
+        layer = chain.layers[i]
+        if layer isa AbstractLayer
+            δ = δ .* layer.activation.(input[i + 1], derivative=true)
+            gs[i] = [δ * input[i]', δ]
+            δ = layer.weights' * δ
+        else # if it is softmax: do nothing
+            error_msg = "This backpropagation method works only for a specific configuration."
+            @assert (layer == softmax) error_msg
+            gs[i] = []
+        end
     end
 end
 
@@ -22,13 +33,15 @@ The basic problem is that for the application of the chain rule we need
 - all intermediate results produced by individual layers
 - to know the explicit derivative of our activation function(s) and the loss function
 """
-function train_hardcoded!(chain::Chain, data, loss)
+function train_hardcoded!(chain::Chain, loss, data, opt)
     # preallocation for speedup
-    ps = params(Chain)
+    ps = params(chain)
     gs = similar(ps) # gradients will have the same shape as our parameters
-    os = [similar(l.bias) for l in Chain.layers] # outputs of our layers is like bias
-    for (input, label) in enumerate(data)
+    os = [l isa AbstractLayer ? similar(l.biases) : [] for l in chain.layers] # outputs of our layers is like bias
+    for (input, label) in data
         gradient_hardcoded(chain, loss, label, [input, os...], gs)
+        # println(size.(ps))
+        # println(size.(gs))
         update!(opt, ps, gs)
     end
 end
