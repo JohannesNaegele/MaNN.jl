@@ -1,27 +1,23 @@
-function gradient_hardcoded(chain::Chain, loss, label, input, gs)
+function gradient_hardcoded(chain::Chain, loss, label, input::Vector{Vector{T}}, gs) where T <: Number
+
     # forward propagation: all outputs of layers are calculated
     for i in eachindex(chain.layers)
-        input[i + 1] = chain.layers[i](input[i])
+        input[i + 1] .= chain.layers[i](input[i])
     end
     
     # backpropagation:
     # calculate derivative of loss function
-    δ = loss(input[end], label, derivative=true)
+    δ = loss(input[end], label, derivative=true) # Note: type instability, speedup e.g. ::Vector{Float32}
     # calculate derivatives inside of layers
-    # println(size.(input))
     for i in reverse(eachindex(chain.layers))
-        # println(i)
-        # println(size(δ))
-        # println(size(input[i]))
         layer = chain.layers[i]
         if layer isa AbstractLayer
-            δ = δ .* layer.activation.(input[i + 1], derivative=true)
+            δ .= δ .* layer.activation.(input[i + 1], derivative=true)
             gs[i] = [δ * input[i]', δ]
             δ = layer.weights' * δ
         else # if it is softmax: do nothing
             error_msg = "This backpropagation method works only for a specific configuration."
             @assert (layer == softmax) error_msg
-            gs[i] = []
         end
     end
 end
@@ -33,15 +29,16 @@ The basic problem is that for the application of the chain rule we need
 - all intermediate results produced by individual layers
 - to know the explicit derivative of our activation function(s) and the loss function
 """
-function train_hardcoded!(chain::Chain, loss, data, opt)
+function train_hardcoded!(chain::Chain, loss, data::Vector{Tuple{S, T}}, opt) where {S, T}
     # preallocation for speedup
     ps = params(chain)
-    gs = similar(ps) # gradients will have the same shape as our parameters
-    os = [l isa AbstractLayer ? similar(l.biases) : [] for l in chain.layers] # outputs of our layers is like bias
+    gs = deepcopy(ps) # gradients will have the same shape as our parameters
+    os = [chain.layers[i] isa AbstractLayer ? similar(chain.layers[i].biases) : similar(chain.layers[i - 1].biases)
+        for i in eachindex(chain.layers)
+    ] # outputs of our layers is like bias
     for (input, label) in data
-        gradient_hardcoded(chain, loss, label, [input, os...], gs)
-        # println(size.(ps))
-        # println(size.(gs))
+        # println(gs)
+        gradient_hardcoded(chain, loss, label, [deepcopy(input), os...], gs)
         update!(opt, ps, gs)
     end
 end
