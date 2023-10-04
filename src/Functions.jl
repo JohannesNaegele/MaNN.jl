@@ -12,6 +12,7 @@ function cross_entropy(y_pred::AbstractArray, y_true::AbstractArray; derivative=
     if !derivative
         -sum(y_true .* log.(y_pred))
     else
+        # FIXME: this is factually wrong and works only because we have the hardcoded algorithm
         y_pred - y_true
     end
 end
