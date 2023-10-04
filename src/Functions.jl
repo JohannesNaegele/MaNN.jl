@@ -2,9 +2,9 @@ relu(x, α=0.1) = (x > 0) ? x : 0
 
 function leakyrelu(x, α=0.1; derivative=false)
     if !derivative
-        return (x > 0) ? x : x * α
+        return (x > 0.0) ? x : x * α
     else
-        return (x > 0) ? 1 : α
+        return (x > 0.0) ? 1.0 : α
     end
 end
 
