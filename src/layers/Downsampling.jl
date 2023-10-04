@@ -1,0 +1,1 @@
+# explanation see here: https://www.quora.com/What-is-a-downsampling-layer-in-Convolutional-Neural-Network-CNN
