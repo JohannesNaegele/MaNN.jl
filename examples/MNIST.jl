@@ -1,6 +1,8 @@
 using MaNN # Tipp: Revise
 using MLDatasets
 using Plots
+using Random
+Random.seed!(1)
 
 # note: this data is already normalized to be between 0.0 and 1.0
 trainset = MNIST(:train)
@@ -37,25 +39,41 @@ function validate(model, data)
 end
 
 my_first_net = Chain(
-    Dense(784 => 512, MaNN.leakyrelu),
-    Dense(512 => 128, MaNN.leakyrelu),
+    Dense(784 => 256, MaNN.leakyrelu),
+    Dense(256 => 128, MaNN.leakyrelu),
     Dense(128 => 10, MaNN.leakyrelu),
     MaNN.softmax
 )
 
 my_first_net(rand(784))
 
+# TODO: use episodes
 # TODO: implement train with autodiff
 @time train_hardcoded!(
     my_first_net,
     cross_entropy,
-    [(vec(trainset.features[:, :, i]), onehotbatch(trainset.targets[i], 0:9)) for i in eachindex(trainset.targets[1:60000])],
+    # TODO: write proper flatten function
+    [
+        (vec(trainset.features[:, :, i]), onehotbatch(trainset.targets[i], 0:9))
+        for i in eachindex(trainset.targets)
+    ],
     BoringOptimizer(0.01)
 )
 
-validate(
+accuracy = validate(
     my_first_net,
     [(vec(testset.features[:, :, i]), onehotbatch(testset.targets[i], 0:9)) for i in eachindex(testset.targets)]
 )
 
+# TODO: visualize images
+function plot_image(feature) end
 # TODO: plot metrics
+
+# Demo for profiler
+@profview train_hardcoded!(
+    my_first_net,
+    cross_entropy,
+    # TODO: write proper flatten function
+    [(vec(trainset.features[:, :, i]), onehotbatch(trainset.targets[i], 0:9)) for i in eachindex(trainset.targets[1:1000])],
+    BoringOptimizer(0.01)
+)
