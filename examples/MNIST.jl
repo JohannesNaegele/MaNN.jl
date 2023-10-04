@@ -64,6 +64,7 @@ accuracy = validate(
     my_first_net,
     [(vec(testset.features[:, :, i]), onehotbatch(testset.targets[i], 0:9)) for i in eachindex(testset.targets)]
 )
+println("Accuracy: $accuracy")
 
 # TODO: visualize images
 function plot_image(feature) end
