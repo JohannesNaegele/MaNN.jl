@@ -13,7 +13,7 @@ function gradient_hardcoded(chain::Chain, loss, label, input::Vector{Vector{T}},
         layer = chain.layers[i]
         if layer isa AbstractLayer
             δ .= δ .* layer.activation.(input[i + 1], derivative=true)
-            gs[i] = [δ * input[i]', δ]
+            gs[2 * i - 1], gs[2 * i] = δ * input[i]', δ
             δ = layer.weights' * δ
         else # if it is softmax: do nothing
             error_msg = "This backpropagation method works only for a specific configuration."
