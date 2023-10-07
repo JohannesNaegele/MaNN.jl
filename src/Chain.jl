@@ -19,5 +19,5 @@ This function return the parameters of our layers.
 However, it might make sense to change this implementation with the introduction of autodiff.
 """
 function params(chain::Chain{T}) where T
-    return [params(layer) for layer in chain.layers]
+    return vcat([params(layer) for layer in chain.layers]...)
 end
