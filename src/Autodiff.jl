@@ -2,7 +2,7 @@
 using Flux
 f(x) = x^2
 df(x) = gradient(f, x)[1]
-df(2)
+df(1)
 
 
 # Linear Regression
@@ -20,7 +20,6 @@ x, y = rand(5), rand(2) # Dummy data
 loss(x, y) # ~ 3
 
 gs = gradient(() -> loss(x, y), Flux.params(W, b))
-
 
 W̄ = gs[W]
 W .-= 0.1 .* W̄

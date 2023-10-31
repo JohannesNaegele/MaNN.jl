@@ -141,6 +141,7 @@ for (y_true, true_label, y_pred) in misclassified_data[1:num_examples_to_visuali
     push!(plot_array, heatmap(reshape(x, 28, 28), color=:grays, title="True: $true_label, Predicted: $y_pred"))
 end
 
+
 ##############################################
 
 # Demo for profiler
