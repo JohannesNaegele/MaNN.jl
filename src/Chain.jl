@@ -19,8 +19,7 @@ end
 params(x) = Float64[]
 
 """
-This function return the parameters of our layers.
-However, it might make sense to change this implementation with the introduction of autodiff.
+This function returns the parameters of our layers.
 """
 function params(chain::Chain{T}) where T
     return vcat([params(layer) for layer in chain.layers]...)
