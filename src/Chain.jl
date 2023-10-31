@@ -10,10 +10,6 @@ function (chain::Chain)(input::AbstractArray)
         output = layer(output)
     end
     return output
-
-###Backpropagation
-###loss funciton minimieren, werte speichern und plotten
-
 end
 
 params(x) = Float64[]
