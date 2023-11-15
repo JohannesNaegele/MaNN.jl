@@ -1,4 +1,4 @@
-using MaNN # Tipp: Revise
+using .MaNN # Tipp: Revise
 using MLDatasets
 using Plots
 using Random
@@ -44,6 +44,27 @@ my_first_net = Chain(
     Dense(128 => 10, MaNN.leakyrelu),
     MaNN.softmax
 )
+import Base.show
+
+#Dense Layer
+function show(io::IO, layer::Dense)
+    println(io, "Dense Layer:")
+    println(io, "  Input Size: $(size(layer.weights, 2))")
+    println(io, "  Output Size: $(size(layer.weights, 1))")
+    println(io, "  Activation Function: $(layer.activation)")
+end
+
+#Chain Layer
+function show(io::IO, chain::Chain{T}) where T
+    println(io, "Chain of Layers:")
+    for (i, layer) in enumerate(chain.layers)
+        println(io, "  Layer $i:")
+        show(io, layer)
+    end
+end
+
+show(my_first_net)
+show(Dense(784 => 256, MaNN.leakyrelu))
 
 my_first_net(rand(784))
 
