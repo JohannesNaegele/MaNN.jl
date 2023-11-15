@@ -70,6 +70,7 @@ my_first_net = Chain(
     MaNN.softmax
 )
 my_first_net(rand(784))
+# unnecessary change
 
 # Convert OneHot1 to array
 #function convert_to_array(oh::OneHot1)
