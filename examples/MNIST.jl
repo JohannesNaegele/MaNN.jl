@@ -67,6 +67,7 @@ model = my_first_net(rand(784))
 
 #################################################
 
+# you should be able to use train! instead
 @time train_hardcoded!(
     my_first_net,
     cross_entropy, 

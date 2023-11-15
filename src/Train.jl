@@ -55,12 +55,14 @@ This is proper training: With autodiff we just need to
 - insert the parameters without knowledge of the model
 - use a general loss function without knowledge of what exactly happens internally
 """
-function train!(ps, data, loss)
-    for (i, d) in enumerate(data)
+
+import Zygote
+
+function train!(chain, loss, data, opt)
+    for (i, (input, label)) in enumerate(data)
         # TODO: batching
-        losses, gradients = withgradient(chain, loss(d))
+        # losses, gradients = Zygote.withgradient(...)
         # TODO: check whether losses is finite i.e. use withgradient function
-        # train_hardcoded!(chain, losses, [], opt)
-        update!(opt, ps, gradients)
+        # update!(opt, params(chain), ...)
     end
 end

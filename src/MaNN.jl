@@ -1,6 +1,6 @@
 module MaNN
 
-export gradient, gradient_hardcoded, train_hardcoded!
+export gradient, gradient_hardcoded, train_hardcoded!, train!
 export Chain, Dense
 export BoringOptimizer
 export cross_entropy
