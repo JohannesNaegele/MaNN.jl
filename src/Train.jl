@@ -7,17 +7,13 @@ function gradient_hardcoded(chain::Chain, loss, label, input::Vector{Vector{T}},
     
     # backpropagation:
     # calculate derivative of loss function
+    # loss fuction wird nach input[end] also y_pred abgeleitet
     δ = loss(input[end], label, derivative=true) # Note: type instability, speedup e.g. ::Vector{Float32}
     # calculate derivatives inside of layers
-    #Werden hier nur die Gradienten nach den Gewichten berechnet?
     for i in reverse(eachindex(chain.layers))
         layer = chain.layers[i]
         if layer isa AbstractLayer
-            #delta wird elementweise multiplitiert mit Aktivierungsfkt(Output des Layers)
             δ .= δ .* layer.activation.(input[i + 1], derivative=true)
-            # gs ist ein array, in dem die Gradienten gespeichert werden
-            # gs[2*i-1] wird die Ableitung nach den Gewichten gespeichert
-            # gs[2*i] wird die Ableitung nach den Bias gespeichert
             gs[2 * i - 1], gs[2 * i] = δ * input[i]', δ
             δ = layer.weights' * δ
         else # if it is softmax: do nothing
@@ -37,8 +33,7 @@ The basic problem is that for the application of the chain rule we need
 function train_hardcoded!(chain::Chain, loss, data::Vector{Tuple{S, T}}, opt) where {S, T}
     #opt is optimizer in this case BoringOptimizer(0.01)
     # preallocation for speedup
-    ps = params(chain) #params ist ein Vektor mit allen Parametern des Models
-    #gs ist eine Kopie von ps
+    ps = params(chain) 
     gs = deepcopy(ps) # gradients will have the same shape as our parameters
     #überprüft ob layers Gewichte und Bias hat, wenn ja, wird ein neues array implementiert mit dem gleichen Typ
     # und der gleichen Größe des Bias
@@ -49,6 +44,7 @@ function train_hardcoded!(chain::Chain, loss, data::Vector{Tuple{S, T}}, opt) wh
     #hier werden die Gradienten berechnet und die Parameter aktualisiert
     for (input, label) in data
         # println(gs)
+        # input: hier wird ein Vektor erzeugt aus den input-werten und dem bias array os  
         gradient_hardcoded(chain, loss, label, [deepcopy(input), os...], gs)
         update!(opt, ps, gs)
     end
@@ -64,6 +60,7 @@ function train!(ps, data, loss)
         # TODO: batching
         losses, gradients = withgradient(chain, loss(d))
         # TODO: check whether losses is finite i.e. use withgradient function
+        # train_hardcoded!(chain, losses, [], opt)
         update!(opt, ps, gradients)
     end
 end
