@@ -27,7 +27,7 @@ function calc(conv::Convolution)(input, filter, stride)
 end
 
 #Berechnung der Convolution 
-function calc_conv(conv::Convolution)(input, padd::Int, factor::Int, stride::Int)
+function (layer::Convolution)(input, padd::Int, factor::Int, stride::Int)
     size_in = size(input)
     size_fil = size(conv.filter)
     
@@ -49,11 +49,33 @@ function calc_conv(conv::Convolution)(input, padd::Int, factor::Int, stride::Int
         input = [e_h input e_h]
         
     
-        output = conv.calc(input,conv.filter,stride)
+        #output = conv.calc(input,conv.filter,stride)
+
+        size_in = size(input)
+
+        output = zeros((ceil(Int,(size_in[1] - size_fil[1] + 1) / stride), ceil(Int,(size_in[2] - size_fil[2] + 1) / stride), size_in[3]))
+
+        for k in 1:size_in[3]
+            for i in 1:(ceil(Int,(size_in[1] - size_fil[1] + 1) / 2))
+                for j in 1:(ceil(Int,(size_in[2] - size_fil[2] + 1) / stride))
+                    output[i, j, k] = sum(input[((i-1)*stride+1):(((i-1)*stride+1)+size_fil[1]-1), ((j-1)*stride+1):(((j-1)*stride+1)+size_fil[2]-1), k] .* filter)
+                end
+            end
+        end
             
     else
         
-        output = conv.calc(input,conv.filter,stride)
+        #output = conv.calc(input,conv.filter,stride)
+
+        output = zeros((ceil(Int,(size_in[1] - size_fil[1] + 1) / stride), ceil(Int,(size_in[2] - size_fil[2] + 1) / stride), size_in[3]))
+
+        for k in 1:size_in[3]
+            for i in 1:(ceil(Int,(size_in[1] - size_fil[1] + 1) / 2))
+                for j in 1:(ceil(Int,(size_in[2] - size_fil[2] + 1) / stride))
+                    output[i, j, k] = sum(input[((i-1)*stride+1):(((i-1)*stride+1)+size_fil[1]-1), ((j-1)*stride+1):(((j-1)*stride+1)+size_fil[2]-1), k] .* filter)
+                end
+            end
+        end
 
     end
 
